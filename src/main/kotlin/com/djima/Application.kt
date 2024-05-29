@@ -7,6 +7,8 @@ import com.djima.plugins.*
 import com.djima.room.RoomController
 import com.djima.routes.chatSocket
 import com.djima.routes.getAllMessage
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
@@ -42,7 +44,12 @@ fun getDatabase(): MongoDatabase {
         logger.info("MongoDBへのアクセスURLを取得")
     }
 
-    val client = MongoClient.create(connectionString)
+    val settings = MongoClientSettings.builder()
+        .applyConnectionString(ConnectionString(connectionString))
+        .applyToSslSettings { builder -> builder.enabled(true) }  // SSLを有効にする設定
+        .build()
+
+    val client = MongoClient.create(settings)
 
     return client.getDatabase("chatApp")
 }
