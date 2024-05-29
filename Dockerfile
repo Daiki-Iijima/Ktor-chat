@@ -1,20 +1,12 @@
-# ベースイメージ
-FROM openjdk:11-jre-slim
+# ビルドステージ
+FROM gradle:7-jdk11 AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle clean build -x test --no-daemon
 
-# アプリケーションディレクトリを作成
-WORKDIR /app
-
-# プロジェクトのソースをコピー
-COPY . .
-
-# Gradleビルドを実行
-RUN ./gradlew clean build -x test
-
-# ビルドされたJARファイルを確認
-RUN ls -alh build/libs  # デバッグ用
-
-# ビルドされたJARファイルをコピー
-ADD build/libs/*.jar app.jar
-
-# アプリケーションを起動
-CMD ["java", "-jar", "app.jar"]
+# 実行ステージ
+FROM openjdk:11
+EXPOSE 8080
+RUN mkdir /app
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/ktor-docker-sample.jar
+ENTRYPOINT ["java", "-jar", "/app/ktor-docker-sample.jar"]
