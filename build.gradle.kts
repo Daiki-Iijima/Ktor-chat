@@ -36,3 +36,17 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:5.1.0")
 }
+
+tasks {
+    jar {
+        manifest {
+            attributes["Main-Class"] = "com.djima.ApplicationKt"
+        }
+        archiveFileName.set("ktor-chat-app.jar")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    }
+    create("stage") {
+        dependsOn("clean", "build")
+    }
+}
